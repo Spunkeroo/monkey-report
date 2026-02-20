@@ -65,6 +65,18 @@ a:hover{opacity:.8}
 .network-bar-inner{max-width:1200px;margin:0 auto;padding:0 20px;display:flex;gap:12px;align-items:center}
 .network-bar a{font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;border:1px solid var(--border);transition:all .2s;color:var(--dim)}
 .network-bar a:hover,.network-bar a.active{border-color:var(--accent);color:var(--accent);opacity:1}
+
+/* Crypto Ticker */
+.crypto-ticker{background:#0a0a12;border-bottom:1px solid var(--border);overflow:hidden;white-space:nowrap;height:36px;display:flex;align-items:center}
+.ticker-track{display:inline-flex;animation:tickerScroll 30s linear infinite;gap:32px;padding:0 16px}
+.ticker-track:hover{animation-play-state:paused}
+.ticker-item{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--text);cursor:default}
+.ticker-item img{width:16px;height:16px;border-radius:50%}
+.ticker-item .t-sym{color:var(--muted);font-size:10px;font-weight:600}
+.ticker-item .t-price{font-variant-numeric:tabular-nums}
+.ticker-item .t-up{color:#00ff66}
+.ticker-item .t-down{color:#ef4444}
+@keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 .network-bar .sep{color:var(--muted);font-size:10px}
 
 /* Header */
@@ -267,6 +279,9 @@ a:hover{opacity:.8}
 </head>
 <body>
 
+<!-- Crypto Ticker (report/investments only) -->
+<div class="crypto-ticker"><div class="ticker-track" id="tickerTrack"></div><div class="ticker-track" id="tickerTrack2"></div></div>
+
 <!-- Network Bar -->
 <nav class="network-bar" aria-label="Monkey Network">
 <div class="network-bar-inner">
@@ -321,6 +336,37 @@ a:hover{opacity:.8}
 <input type="text" id="searchInput" placeholder="Search MonkeyReport..." aria-label="Search">
 </div>
 </header>
+
+<!-- Live Crypto Prices — at top for report/investments -->
+<section class="crypto-section" id="cryptoPrices" style="padding-top:24px">
+<div class="crypto-header">
+<h3>Live Crypto Prices — Top 100</h3>
+<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+<input type="text" class="crypto-search" id="cryptoSearch" placeholder="Search coins...">
+<span class="update-badge" id="cryptoUpdate">Loading...</span>
+</div>
+</div>
+<div class="crypto-scroll">
+<table class="crypto-table">
+<thead><tr>
+<th data-col="market_cap_rank" class="sort-asc">#</th>
+<th>Coin</th>
+<th data-col="current_price">Price</th>
+<th data-col="price_change_percentage_24h">24h</th>
+<th data-col="price_change_percentage_7d_in_currency" class="hide-mobile">7d</th>
+<th data-col="total_volume" class="hide-mobile">Volume</th>
+<th data-col="market_cap" class="hide-mobile">Market Cap</th>
+</tr></thead>
+<tbody id="cryptoBody"></tbody>
+</table>
+</div>
+<div class="crypto-cta-row">
+<a href="https://coinbase.com/join/YAGES3X" target="_blank" data-aff="coinbase" style="background:#0052ff">Buy on Coinbase — $10 Free →</a>
+<a href="https://shop.ledger.com/?r=0553c9ea1441" target="_blank" data-aff="ledger" style="background:#ff5500">Secure with Ledger →</a>
+<a href="https://stake.com/?c=MyXSehCn" target="_blank" data-aff="stake" style="background:#1475e1">Trade on Stake →</a>
+<a href="https://shuffle.com?r=q94atl9m05" target="_blank" data-aff="shuffle" style="background:#7c3aed">Play on Shuffle →</a>
+</div>
+</section>
 
 <!-- Hero -->
 <section class="hero">
@@ -515,35 +561,8 @@ a:hover{opacity:.8}
 </div>
 </section>
 
-<!-- Live Crypto Prices — Top 100 (report + investments) -->
-<section class="crypto-section" id="cryptoPrices">
-<div class="crypto-header">
-<h3>Live Crypto Prices — Top 100</h3>
-<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-<input type="text" class="crypto-search" id="cryptoSearch" placeholder="Search coins...">
-<span class="update-badge" id="cryptoUpdate">Loading...</span>
-</div>
-</div>
-<div class="crypto-scroll">
-<table class="crypto-table">
-<thead><tr>
-<th data-col="market_cap_rank" class="sort-asc">#</th>
-<th>Coin</th>
-<th data-col="current_price">Price</th>
-<th data-col="price_change_percentage_24h">24h</th>
-<th data-col="price_change_percentage_7d_in_currency" class="hide-mobile">7d</th>
-<th data-col="total_volume" class="hide-mobile">Volume</th>
-<th data-col="market_cap" class="hide-mobile">Market Cap</th>
-</tr></thead>
-<tbody id="cryptoBody"></tbody>
-</table>
-</div>
-<div class="crypto-cta-row">
-<a href="https://coinbase.com/join/YAGES3X" target="_blank" data-aff="coinbase" style="background:#0052ff">Buy Crypto on Coinbase — Get $10 Free →</a>
-<a href="https://shop.ledger.com/?r=0553c9ea1441" target="_blank" data-aff="ledger" style="background:#ff5500">Secure with Ledger →</a>
-<a href="https://stake.com/?c=MyXSehCn" target="_blank" data-aff="stake" style="background:#1475e1">Trade on Stake →</a>
-</div>
-</section>
+<!-- Live Crypto Prices — other sites small panel -->
+
 
 <!-- Trending Section -->
 <div class="trending" style="max-width:1200px;margin:0 auto;padding:20px">
@@ -804,6 +823,18 @@ if(CRYPTO_SITES.includes(SLUG)){
       cryptoData=d;
       sortData(sortCol);
       if(updateBadge)updateBadge.textContent='Updated '+new Date().toLocaleTimeString();
+      // Update ticker with top 10
+      const tt=document.getElementById('tickerTrack');
+      const tt2=document.getElementById('tickerTrack2');
+      if(tt){
+        const top10=d.slice(0,10);
+        const html=top10.map(c=>{
+          const p=c.current_price;const ch=c.price_change_percentage_24h||0;const up=ch>=0;
+          return`<span class="ticker-item"><img src="${c.image}" alt="${c.symbol}" loading="lazy"><span class="t-sym">${c.symbol.toUpperCase()}</span><span class="t-price">$${p>=1?p.toLocaleString(undefined,{maximumFractionDigits:2}):p.toFixed(4)}</span><span class="${up?'t-up':'t-down'}">${up?'+':''}${ch.toFixed(1)}%</span></span>`;
+        }).join('');
+        tt.innerHTML=html;
+        if(tt2)tt2.innerHTML=html;
+      }
       gtag('event','crypto_load',{count:d.length,site:SLUG});
     }catch(e){console.log('Crypto feed unavailable')}
   }
